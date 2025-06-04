@@ -1,0 +1,90 @@
+server:
+  port: 17000
+
+spring:
+  application:
+    name: gateway_server
+  cloud:
+    gateway:
+      global-cors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"          # 允许所有域名
+            allowedMethods: # 允许的HTTP方法
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"          # 允许所有请求头
+#            allowCredentials: true       # 允许发送Cookie
+            maxAge: 3600                 # 预检请求缓存时间(秒)
+      routes:
+        - id: order_service
+          uri: lb://order-service  # 使用服务名称
+          predicates:
+            - Path=/orders/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: gateway-circuit
+                fallbackUri: forward:/fallback
+
+        - id: user_service
+          uri: lb://user-service   # 使用服务名称
+          predicates:
+            - Path=/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: gateway-circuit
+                fallbackUri: forward:/fallback
+
+      discovery:
+        locator:
+          enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      gateway-circuit:
+        register-health-indicator: true
+        failure-rate-threshold: 50
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 5s
+  timelimiter:
+    configs:
+      default:
+        timeout-duration:
+          nanos: 1
+        cancel-running-future: true
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+  client:
+    service-url:
+      defaultZone: http://localhost:18000/eureka/,http://localhost:18001/eureka/
+
+        #spring:
+        #  application:
+        #    name: gateway_server
+        #  cloud:
+        #    gateway:
+        #      routes:
+        #        - id: order_service
+        #          uri: http://127.0.0.1:18041
+        #          predicates:
+        #            - Path=/orders/**
+        #
+        #        - id: user_service
+        #          uri: http://127.0.0.1:18081   # 使用服务名称
+        #          predicates:
+      #            - Path=/users/**
+
+      # 可选：开启自动路由发现

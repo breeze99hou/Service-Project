@@ -1,0 +1,17 @@
+server:
+  port: 18041
+
+spring:
+  application:
+    name: order-service
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+  client:
+    service-url:
+      defaultZone: http://localhost:18000/eureka/  # 指向 Eureka 服务器

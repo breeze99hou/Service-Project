@@ -1,0 +1,66 @@
+server:
+  port: 18041
+
+spring:
+  application:
+    name: order-service
+  cloud:
+    loadbalancer:
+      enabled: true
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+  client:
+    service-url:
+      defaultZone: http://localhost:18000/eureka/  # 指向 Eureka 服务器
+
+
+#resilience4j:
+#  circuitbreaker:
+#    instances:
+#      # 断路器实例A配置
+#      circuitBreakerA:
+#        register-health-indicator: true
+#        failure-rate-threshold: 30 # 失败率阈值30%
+#        sliding-window-type: TIME_BASED # 时间窗口型
+#        sliding-window-size: 10 # 滑动窗口长度10秒
+#        minimum-number-of-calls: 5 # 最小请求数5个
+#        wait-duration-in-open-state: 5s # OPEN状态等待5秒后变HALF_OPEN
+#        permitted-number-of-calls-in-half-open-state: 3 # HALF_OPEN状态允许3个测试请求
+#        automatic-transition-from-open-to-half-open-enabled: true # 自动转换
+#
+#      # 断路器实例B配置
+#      circuitBreakerB:
+#        register-health-indicator: true
+#        failure-rate-threshold: 50 # 失败率阈值50%
+#        slow-call-rate-threshold: 30 # 慢调用阈值30%
+#        slow-call-duration-threshold: 2s # 慢调用时间阈值2秒
+#        sliding-window-type: TIME_BASED # 时间窗口型
+#        sliding-window-size: 10 # 滑动窗口长度10秒
+#        minimum-number-of-calls: 5 # 最小请求数5个
+#        wait-duration-in-open-state: 5s # OPEN状态等待5秒后变HALF_OPEN
+#        permitted-number-of-calls-in-half-open-state: 3 # HALF_OPEN状态允许3个测试请求
+#        automatic-transition-from-open-to-half-open-enabled: true # 自动转换
+
+logging:
+  level:
+    root: INFO
+    io.github.resilience4j: DEBUG
+
+#resilience4j:
+#  bulkhead:
+#    instances:
+#      bulkheadA:  # 隔离器实例名称
+#        max-concurrent-calls: 10      # 最大并发线程数
+#        max-wait-duration: 20ms      # 最大阻塞等待时间
+resilience4j:
+  ratelimiter:
+    instances:
+      rateLimiterA:  # 限流器实例名称
+        limit-for-period: 5        # 每个周期允许的最大请求数
+        limit-refresh-period: 2s   # 令牌刷新周期（2秒）
+        timeout-duration: 0ms      # 请求等待令牌的最长时间（0ms表示立即拒绝）
