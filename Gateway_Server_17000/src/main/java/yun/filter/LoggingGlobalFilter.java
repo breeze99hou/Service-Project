@@ -6,6 +6,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -23,6 +24,14 @@ public class LoggingGlobalFilter implements GlobalFilter, Ordered {
         String origin = headers.getFirst("Origin");
         String host = headers.getFirst("Host");
         String referer = headers.getFirst("Referer");
+        String token = headers.getFirst("Authorization");
+
+        if (token == null || !token.equals("Bearer 123456")){
+            logger.warn("非法请求，缺少或无效的token！");
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
+        }
+
 
         logger.info("请求路径: {}, 访问时间: {}",
                 exchange.getRequest().getPath(),
