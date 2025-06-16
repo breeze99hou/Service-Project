@@ -21,7 +21,7 @@ public interface UserClient {
 
     @GetMapping("/users/{userId}")
 //    @CircuitBreaker(name = "circuitBreakerA", fallbackMethod = "getUserFallback")
-    @Bulkhead(name = "bulkheadA", fallbackMethod = "getUserFallback")
+//    @Bulkhead(name = "bulkheadA", fallbackMethod = "getUserFallback")
 //    @RateLimiter(name = "rateLimiterA", fallbackMethod = "getUserFallback")
     String getUser(@PathVariable("userId") String userId);
 
